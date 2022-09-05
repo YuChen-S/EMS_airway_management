@@ -7,10 +7,10 @@ import os
 
 def st_website_setting():
     st.set_page_config(
-        page_title="Webpage title",
-        page_icon="random",
-        layout="centered",
-        initial_sidebar_state="auto",
+        page_title="KMUH EMS DATA VIZ",
+        page_icon="chart_with_upwards_trend",
+        layout="wide",
+        initial_sidebar_state="expanded",
     )
 
 def st_sidebar_info():
@@ -26,10 +26,10 @@ def st_sidebar_info():
         st.title("Contact")
         st.info(
             """
-            Team: 
+            Developer: 
             [Yu Chen Shen](), 
             [](), \n
-            Director: [Chao-Wen Chen]
+            Director: [Chao-Wen Chen]()
             """
         )
         st.success("Contact zoro6mihawk@gmail.com if any problem was found, thanks")
@@ -63,17 +63,22 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
     df_taiwan = pd.read_csv(file_path,)
     start_time = start_time
     end_time = end_time
-    year_index = 351 # if 2016 -> iloc[351*3:, :]
     target_city = '新北市|臺北市|桃園市|臺中市|臺南市|高雄市' if additional_city==[] else '新北市|臺北市|桃園市|臺中市|臺南市|高雄市'+'|'+'|'.join(additional_city)
     target_city = target_city.replace("台", "臺")
     airway_columns = ['消防緊急救護急救處置', '總次數', '呼吸道處置', '口咽呼吸道', '鼻咽呼吸道', '抽吸', '鼻管', '面罩', '非再呼吸型面罩', 'BVM', 'SGA', '氣管內管', '霧化吸入型面罩', 
                       '哈姆立克法', '其他',]
     airway_names = ['total_service_count', 'airway_manage_count', 'Oral_airway', 'Nasal_airway', 'Aspirate', 'Nasal_cannula', 'Mask', 'NRM', 'BVM', 'SGA', 'Endo', 'Nebulizer_mask', 
                     'Heimlich', 'Others']
-    df_taiwan = df_taiwan.loc[351*(int(start_time[0:4])-2013):, airway_columns]
-    df_taiwan = df_taiwan[df_taiwan['消防緊急救護急救處置'].str.contains(target_city)]
     df_taiwan = df_taiwan[df_taiwan['消防緊急救護急救處置'].str.contains('月')]
     df_taiwan = df_taiwan[~df_taiwan['消防緊急救護急救處置'].str.contains('br')]
+    df_taiwan = df_taiwan[~df_taiwan['消防緊急救護急救處置'].str.contains('區域別總計')]
+    df_taiwan.reset_index(inplace=True)
+    start_index = year_month_delta(start_time='2013/01', end_time=start_time)
+    end_index = year_month_delta(start_time='2013/01', end_time=end_time)
+    month_index = 26
+    df_taiwan = df_taiwan.loc[month_index*(start_index):month_index*(end_index+1)-1, airway_columns]
+    df_taiwan = df_taiwan[df_taiwan['消防緊急救護急救處置'].str.contains(target_city)]
+
     df_taiwan.rename(columns = {'消防緊急救護急救處置':'year_month_city', '總次數':'total_service_count', '呼吸道處置':'airway_manage_count', '口咽呼吸道':'Oral_airway', '鼻咽呼吸道':'Nasal_airway', 
                 '抽吸':'Aspirate', '鼻管':'Nasal_cannula', '面罩':'Mask', '非再呼吸型面罩':'NRM', '氣管內管':'Endo', '霧化吸入型面罩':'Nebulizer_mask','哈姆立克法': 'Heimlich', 
                 '其他': 'Others'}, inplace = True)
@@ -100,15 +105,15 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
 
     ### Plot the figure
     plt.style.use('seaborn-darkgrid')
-    fig = plt.figure(figsize=(40, 15),)
+    fig = plt.figure(figsize=(30, 15),)
     month_period = year_month_delta(start_time=start_time, end_time=end_time)+1
     x = pd.Series(pd.period_range(start_time, freq='M', periods=month_period)).astype('str')
     plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Kaohsiung')][airway_type], label='Kaohsiung', linestyle='-', marker='o', color='tab:red', alpha=0.8)
-    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('New')][airway_type], label="New Taipei", linestyle='--', marker='o', color='tab:blue', alpha=0.8,)
-    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taipei City')][airway_type], label='Taipei', linestyle='--', marker='o', color='tab:cyan', alpha=0.8)
-    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taoyuan')][airway_type], label='Taoyuan', linestyle='--', marker='o', color='tab:orange', alpha=0.8)
-    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taichung')][airway_type], label='Taichung', linestyle='-.', marker='.', color='tab:green', alpha=0.8)
-    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Tainan')][airway_type], label='Tainan', linestyle='-.', marker='.', color='limegreen', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('New')][airway_type], label="New Taipei", linestyle='-.', marker='o', color='tab:blue', alpha=0.8,)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taipei City')][airway_type], label='Taipei', linestyle='-.', marker='o', color='tab:cyan', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taoyuan')][airway_type], label='Taoyuan', linestyle='-.', marker='o', color='tab:orange', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taichung')][airway_type], label='Taichung', linestyle='--', marker='o', color='tab:green', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Tainan')][airway_type], label='Tainan', linestyle='--', marker='o', color='tab:purple', alpha=0.8)
 
     if additional_city:
         colors = plt.cm.Dark2(np.linspace(0, 1, len(additional_city)))

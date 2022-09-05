@@ -24,14 +24,12 @@ with st.container():
     # first row
     user_col_1_1, user_col_1_2 = st.columns(2)
     with user_col_1_1:
-        year_list = ['2016', '2017', '2018', '2019', '2020', '2021', '2022']
-        start_year = st.selectbox('The start year: ', year_list, index=0)
+        year_list = ['2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022']
+        start_year = st.selectbox('The start year: ', year_list, index=3)
     with user_col_1_2:
         month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
         start_month = st.selectbox('The start month: ', month_list, index=0)
     start_time = str(start_year) + '/' + str(start_month)
-    st.write('The start Year-Month: ' + start_time)
-
     # second row
     user_col_2_1, user_col_2_2 = st.columns(2)
     with user_col_2_1:
@@ -39,8 +37,10 @@ with st.container():
     with user_col_2_2:
         end_month = st.selectbox('The end month: ', month_list, index=5)
     end_time = str(end_year) + '/' + str(end_month)
-    st.write('The end Year-Month: ' + end_time)
-
+    if end_year == '2022' and int(end_month) > 6:
+        end_time = '2022/06'
+    st.warning('Time period: ' + '**_' + start_time + '      ~      '  + end_time + '_**')
+    st.write('---')
     # third row
     st.subheader('Please select the type of airway management to be analyzed')
     user_col_3_1, user_col_3_2 = st.columns(2)
@@ -52,7 +52,8 @@ with st.container():
     with user_col_3_1:
         airway_type = st.selectbox('The airway managements', airway_names, index=4)
     with user_col_3_2:
-        additional_city = st.multiselect('The additional cities to be included', city_name, [])
+        additional_city = st.multiselect('Additional cities to be included', city_name, [])
+    st.warning('The selected airway management: ' + '**_' + airway_type + '_**')
 st.write('---')
 
 ###### Model prediction ######
@@ -61,10 +62,11 @@ show_result = False
 with st.container():
     if submit:
         my_bar = st.progress(0)
+        fig = generate_municipality_line(start_time, end_time, airway_type, additional_city, )
         for percent_complete in range(100):
              time.sleep(0.01)
              my_bar.progress(percent_complete + 1)
-        fig = generate_municipality_line(start_time, end_time, airway_type, additional_city, )
+        
         st.success('Thanks for waiting, please check your result!')
         st.write('---')
         show_result = True
@@ -73,5 +75,5 @@ with st.container():
 if show_result:
     with st.container():
         st.subheader('Your linecharts:')
-        st.pyplot(fig)
+        st.pyplot(fig, clear_figure=True, figsize=(15, 3))
 ###### health education block ######
