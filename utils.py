@@ -28,7 +28,7 @@ def st_sidebar_info():
             """
             Developer: 
             [Yu Chen Shen](), 
-            [](), \n
+            [Yi Syuan Wu](), \n
             Director: [Chao-Wen Chen]()
             """
         )
