@@ -46,14 +46,23 @@ with st.container():
     user_col_3_1, user_col_3_2 = st.columns(2)
     airway_names = ['Oral_airway', 'Nasal_airway', 'Aspirate', 'Nasal_cannula', 'Mask', 'NRM', 'BVM', \
         'SGA', 'Endo', 'Nebulizer_mask', 'Heimlich', 'Others']
-    municipality = ['新北市', '臺北市', '桃園市', '臺中市', '臺南市', '高雄市', ]
-    city_name = ['宜蘭縣', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣', '屏東縣', '臺東縣', '花蓮縣', \
-        '澎湖縣', '基隆市', '新竹市', '嘉義市', '金門縣', '連江縣']
     with user_col_3_1:
         airway_type = st.selectbox('The airway managements', airway_names, index=4)
     with user_col_3_2:
-        additional_city = st.multiselect('Additional cities to be included', city_name, [])
+        st.write(' ')
     st.warning('The selected airway management: ' + '**_' + airway_type + '_**')
+    st.write('---')
+    # fourth row
+    st.subheader('Please select the city for bar chart and additional cities for line chart')
+    user_col_4_1, user_col_4_2 = st.columns(2)
+    municipality = ['新北市', '臺北市', '桃園市', '臺中市', '臺南市', '高雄市', ]
+    city_name = ['宜蘭縣', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義縣', '屏東縣', '臺東縣', '花蓮縣', \
+        '澎湖縣', '基隆市', '新竹市', '嘉義市', '金門縣', '連江縣']
+    with user_col_4_1:
+        primary_city = st.selectbox('The primary city for stacked bar chart: ', municipality+city_name, index=0)
+    with user_col_4_2:
+        additional_city = st.multiselect('Additional cities to be included', city_name, [])
+    st.warning('The city for bar chart: ' + '**_' + primary_city + '_**')
 st.write('---')
 
 ###### Model prediction ######
@@ -62,7 +71,7 @@ show_result = False
 with st.container():
     if submit:
         my_bar = st.progress(0)
-        fig = generate_municipality_line(start_time, end_time, airway_type, additional_city, )
+        fig, fig_bar = generate_municipality_line(start_time, end_time, airway_type, primary_city, additional_city, )
         for percent_complete in range(100):
              time.sleep(0.01)
              my_bar.progress(percent_complete + 1)
@@ -76,4 +85,6 @@ if show_result:
     with st.container():
         st.subheader('Your linecharts:')
         st.pyplot(fig, clear_figure=True, figsize=(15, 3))
+        st.subheader('Your barcharts:')
+        st.pyplot(fig_bar, clear_figure=True, figsize=(15, 3))
 ###### health education block ######

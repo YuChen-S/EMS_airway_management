@@ -48,7 +48,7 @@ def year_month_delta(start_time='2016/01', end_time='2022/06'):
     return 12*(pd.to_datetime(end_time).year - pd.to_datetime(start_time).year) + \
         (pd.to_datetime(end_time).month - pd.to_datetime(start_time).month)
 
-def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_type='Mask', additional_city=[]):
+def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_type='Mask', primary_city='新北市', additional_city=[]):
     '''
     This function would generate a multiple line plot based on "消防緊急救護急救處置─按區域別分" dataset labeled by municipality or other additional cities.
 
@@ -96,13 +96,15 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
     df_taiwan.reset_index(inplace=True)
 
     ### Data correction
-    # data loss at Taichung City 202203
-    df_taiwan.iloc[df_taiwan[df_taiwan['year_month_city']=='2022-3 Taichung City'].index[0], 2:] = (df_taiwan[df_taiwan['year_month_city']=='2022-2 Taichung City'].iloc[0, 2:] \
-                                                    + df_taiwan[df_taiwan['year_month_city']=='2022-4 Taichung City'].iloc[0, 2:]) // 2
     # data saved in wrong column (Nasal nanuula <-> Mask) at New Taipei 202009
-    new_taipei_202009_index = df_taiwan[df_taiwan['year_month_city']=='2020-9 New Taipei'].index[0]
-    df_taiwan.iloc[new_taipei_202009_index, 7], df_taiwan.iloc[new_taipei_202009_index, 8] = df_taiwan.iloc[new_taipei_202009_index, 8], df_taiwan.iloc[new_taipei_202009_index, 7]
-
+    if int(end_time.replace('/', '')) >= 202009:
+        new_taipei_202009_index = df_taiwan[df_taiwan['year_month_city']=='2020-9 New Taipei'].index[0]
+        df_taiwan.iloc[new_taipei_202009_index, 7], df_taiwan.iloc[new_taipei_202009_index, 8] = df_taiwan.iloc[new_taipei_202009_index, 8], df_taiwan.iloc[new_taipei_202009_index, 7]
+    # data loss at Taichung City 202203
+    if int(end_time.replace('/', '')) >= 202203:
+        df_taiwan.iloc[df_taiwan[df_taiwan['year_month_city']=='2022-3 Taichung City'].index[0], 2:] = (df_taiwan[df_taiwan['year_month_city']=='2022-2 Taichung City'].iloc[0, 2:] \
+                                                    + df_taiwan[df_taiwan['year_month_city']=='2022-4 Taichung City'].iloc[0, 2:]) // 2
+    
     ### Plot the figure
     plt.style.use('seaborn-darkgrid')
     fig = plt.figure(figsize=(30, 15),)
@@ -136,25 +138,59 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
     text_y_interval = (ylim[1]/1450)*60
     text_line_interval = (ylim[1]/1450)*10
     # 2019/12: Wuhan Pandemics
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2019/12'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='darkgrey', alpha=0.5)
-    plt.text(year_month_delta(start_time=start_time, end_time='2019/12'), ylim[1]+text_y_interval+text_line_interval, '2019/12:Wuhan Pandemics', fontsize=16)
+    if int(end_time.replace('/', '')) >= 201912:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2019/12'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='dimgrey', alpha=0.6)
+        plt.text(year_month_delta(start_time=start_time, end_time='2019/12'), ylim[1]+text_y_interval+text_line_interval, '2019/12:Wuhan Pandemics', fontsize=16)
     # 2020/01: NHCC set up
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2020/01'), ylim[0], ylim[1], linestyle=':', color='darkgrey', alpha=0.5)
-    plt.text(year_month_delta(start_time=start_time, end_time='2020/01'), ylim[1]+text_line_interval, '2020/01:NHCC set up', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202001:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2020/01'), ylim[0], ylim[1], linestyle=':', color='dimgrey', alpha=0.6)
+        plt.text(year_month_delta(start_time=start_time, end_time='2020/01'), ylim[1]+text_line_interval, '2020/01:NHCC set up', fontsize=16)
     # 2020/02: Announcement to EMS
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2020/02'), ylim[0], ylim[1]-text_y_interval, linestyle=':', color='red', alpha=0.8)
-    plt.text(year_month_delta(start_time=start_time, end_time='2020/02'), ylim[1]-text_y_interval+text_line_interval, '2020/02:Announcement to EMS', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202002:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2020/02'), ylim[0], ylim[1]-text_y_interval, linestyle=':', color='red', alpha=0.8)
+        plt.text(year_month_delta(start_time=start_time, end_time='2020/02'), ylim[1]-text_y_interval+text_line_interval, '2020/02:Announcement to EMS', fontsize=16)
     # 2021/01: Taoyuan General Hospital\ncluster infection
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2021/01'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='red', alpha=0.8)
-    plt.text(year_month_delta(start_time=start_time, end_time='2021/01'), ylim[1]+text_y_interval+text_line_interval, '2021/01:Taoyuan Hospital Cluster', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202101:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2021/01'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='red', alpha=0.8)
+        plt.text(year_month_delta(start_time=start_time, end_time='2021/01'), ylim[1]+text_y_interval+text_line_interval, '2021/01:Taoyuan Hospital Cluster', fontsize=16)
     # 2021/05: Northern Taiwan\nPandemics & Level III alert
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2021/05'), ylim[0], ylim[1], linestyle=':', color='red', alpha=0.8)
-    plt.text(year_month_delta(start_time=start_time, end_time='2021/05'), ylim[1]+text_line_interval, '2021/05:North Taiwan Level 3 alert', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202105:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2021/05'), ylim[0], ylim[1], linestyle=':', color='red', alpha=0.8)
+        plt.text(year_month_delta(start_time=start_time, end_time='2021/05'), ylim[1]+text_line_interval, '2021/05:North Taiwan Level 3 alert', fontsize=16)
     # 2021/07: Reopen to\nLevel II alert
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2021/07'), ylim[0], ylim[1]-text_y_interval, linestyle=':', color='green', alpha=0.5)
-    plt.text(year_month_delta(start_time=start_time, end_time='2021/07'), ylim[1]-text_y_interval+text_line_interval, '2021/07:Level 2 alert', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202107:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2021/07'), ylim[0], ylim[1]-text_y_interval, linestyle=':', color='green', alpha=0.5)
+        plt.text(year_month_delta(start_time=start_time, end_time='2021/07'), ylim[1]-text_y_interval+text_line_interval, '2021/07:Level 2 alert', fontsize=16)
     # 2022/03: Omicron Outbreak
-    plt.vlines(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='red', alpha=0.8)
-    plt.text(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[1]+text_y_interval+text_line_interval, '2022/03:Omicron', fontsize=16)
+    if int(end_time.replace('/', '')) >= 202203:
+        plt.vlines(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='red', alpha=0.8)
+        plt.text(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[1]+text_y_interval+text_line_interval, '2022/03:Omicron', fontsize=16)
     
-    return fig
+    ###
+ 
+    basic_airway = ['Oral_airway', 'Nasal_airway']
+    advanced_airway = ['SGA', 'Endo']
+    basic_oxygen = ['Nasal_cannula', 'Mask', 'NRM']
+    advanced_oxygen = ['BVM', 'Nebulizer_mask']
+    others = ['Aspirate', 'Heimlich', 'Others']
+    df_taiwan_bar = df_taiwan[df_taiwan['year_month_city'].str.contains(city_name[primary_city])]
+
+    y1 = df_taiwan_bar[advanced_airway].sum(axis=1) / df_taiwan_bar['airway_manage_count']
+    y2 = df_taiwan_bar[advanced_oxygen].sum(axis=1) / df_taiwan_bar['airway_manage_count']
+    y3 = df_taiwan_bar[basic_airway].sum(axis=1) / df_taiwan_bar['airway_manage_count']
+    y4 = df_taiwan_bar[basic_oxygen].sum(axis=1) / df_taiwan_bar['airway_manage_count']
+    y5 = df_taiwan_bar[others].sum(axis=1) / df_taiwan_bar['airway_manage_count']
+    fig_bar = plt.figure(figsize=(30, 15))
+    plt.bar(x, y1, color='tab:red', label='Advanced_airway', alpha=0.8)
+    plt.bar(x, y2, bottom=y1, color='tab:orange', label='Advanced_oxygen', alpha=0.8)
+    plt.bar(x, y3, bottom=y1+y2, color='tab:blue', label='Basic_airway', alpha=0.8)
+    plt.bar(x, y4, bottom=y1+y2+y3, color='tab:cyan', label='Basic_oxygen', alpha=0.8)
+    plt.bar(x, y5, bottom=y1+y2+y3+y4, color='tab:gray', label='Others', alpha=0.8)
+    plt.plot(x, y1+y2, linestyle=':', marker='o', color='k', alpha=0.5)
+
+    plt.xlabel("Year-Month", fontsize=20)
+    plt.xticks(rotation=-30)
+    plt.ylabel("Ratio", fontsize=20)
+    plt.legend(fontsize=14, loc='upper center', frameon=True, facecolor='white', markerscale=1, ncol=5)
+    plt.title(f"Bar chart for ratio of airway managements in {city_name[primary_city]}", fontsize=24)
+    return (fig, fig_bar)
