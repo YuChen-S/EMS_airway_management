@@ -39,9 +39,14 @@ def st_title_info():
     st.title('Taiwan EMS Data Visualizer')
     st.subheader(
     '''
-    This application will help you to create linecharts for time versus counts of each airway management in EMS system.
+    This application will help you to visualize the trends of pre-hospital airway management in EMS system.
     ''', anchor=None)
-    st.write('Thanks for using our product!')
+    st.markdown(''' **3 figure will be produced:** 
+    1. Line chart with event count of selected airway management versus time in six municipalities + selected additional cities.
+    2. Line chart with event ratio of selected airway management versus time in six municipalities + selected additional cities.
+    3. Bar chart with categorical ratio of airway management in the selected city
+    ''')
+    st.write('**Please check the user guide if any question. Thanks for using our product!**')
     st.write('---')
 
 def year_month_delta(start_time='2016/01', end_time='2022/06'):
@@ -63,7 +68,8 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
     df_taiwan = pd.read_csv(file_path,)
     start_time = start_time
     end_time = end_time
-    target_city = '新北市|臺北市|桃園市|臺中市|臺南市|高雄市' if additional_city==[] else '新北市|臺北市|桃園市|臺中市|臺南市|高雄市'+'|'+'|'.join(additional_city)
+    target_city = '新北市|臺北市|桃園市|臺中市|臺南市|高雄市' if additional_city==[] else '新北市|臺北市|桃園市|臺中市|臺南市|高雄市|' + '|'.join(additional_city)
+    target_city = target_city + f'|{primary_city}' if primary_city not in target_city else target_city
     target_city = target_city.replace("台", "臺")
     airway_columns = ['消防緊急救護急救處置', '總次數', '呼吸道處置', '口咽呼吸道', '鼻咽呼吸道', '抽吸', '鼻管', '面罩', '非再呼吸型面罩', 'BVM', 'SGA', '氣管內管', '霧化吸入型面罩', 
                       '哈姆立克法', '其他',]
@@ -127,7 +133,7 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
             except:
                 pass
 
-    plt.title('EMS data from municipalities: Oxygen from ' + airway_type, fontsize=24)
+    plt.title('Pre-hospital airway management event counts: ' + airway_type, fontsize=24)
     plt.xlabel('Year-Month', fontsize=20)
     plt.ylabel('Event counts', fontsize=20)
     plt.xticks(rotation=-30)
@@ -166,7 +172,7 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
         plt.vlines(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[0], ylim[1]+text_y_interval, linestyle=':', color='red', alpha=0.8)
         plt.text(year_month_delta(start_time=start_time, end_time='2022/03'), ylim[1]+text_y_interval+text_line_interval, '2022/03:Omicron', fontsize=16)
     
-    ###
+    ### Bar chart for ratio of airway management in specific city
  
     basic_airway = ['Oral_airway', 'Nasal_airway']
     advanced_airway = ['SGA', 'Endo']
@@ -191,6 +197,37 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
     plt.xlabel("Year-Month", fontsize=20)
     plt.xticks(rotation=-30)
     plt.ylabel("Ratio", fontsize=20)
-    plt.legend(fontsize=14, loc='upper center', frameon=True, facecolor='white', markerscale=1, ncol=5)
-    plt.title(f"Bar chart for ratio of airway managements in {city_name[primary_city]}", fontsize=24)
-    return (fig, fig_bar)
+    plt.legend(fontsize=14, loc='upper center', frameon=True, facecolor='white', markerscale=1, ncol=5, bbox_to_anchor=(0.5, 1.01))
+    plt.title(f"Bar chart for categorical ratio of airway managements in {city_name[primary_city]}", fontsize=24)
+
+    ### Line chart for ratio of airway management in municipalities
+    fig_ratio = plt.figure(figsize=(30, 15),)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Kaohsiung')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('Kaohsiung')]['airway_manage_count'], 
+            label='Kaohsiung', linestyle='-', marker='o', color='tab:red', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('New')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('New')]['airway_manage_count'], 
+            label="New Taipei", linestyle='-.', marker='o', color='tab:blue', alpha=0.8,)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taipei City')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('Taipei City')]['airway_manage_count'], 
+            label='Taipei', linestyle='-.', marker='o', color='tab:cyan', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taoyuan')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('Taoyuan')]['airway_manage_count'], 
+            label='Taoyuan', linestyle='-.', marker='o', color='tab:orange', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Taichung')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('Taichung')]['airway_manage_count'], 
+            label='Taichung', linestyle='--', marker='o', color='tab:green', alpha=0.8)
+    plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains('Tainan')][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains('Tainan')]['airway_manage_count'], 
+            label='Tainan', linestyle='--', marker='o', color='tab:purple', alpha=0.8)
+
+    if additional_city:
+        colors = plt.cm.Dark2(np.linspace(0, 1, len(additional_city)))
+        for index, city in enumerate(additional_city):
+            city = city.replace("台", "臺")
+            try:
+                plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains(city_name[city])][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains(city_name[city])]['airway_manage_count'], 
+                        label=city_name[city], linestyle=':', marker='*', color=colors[index], alpha=0.8)
+            except:
+                pass
+
+    plt.title('Pre-hospital airway management event ratios: ' + airway_type, fontsize=24)
+    plt.xlabel('Year-Month', fontsize=20)
+    plt.ylabel('Event ratio', fontsize=20)
+    plt.xticks(rotation=-30)
+    plt.legend(fontsize=20, loc='upper left', frameon=True, facecolor='white', markerscale=1.5, ncol=2)
+    return (fig, fig_bar, fig_ratio)
