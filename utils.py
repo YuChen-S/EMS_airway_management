@@ -129,7 +129,7 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
             city = city.replace("台", "臺")
             try:
                 plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains(city_name[city])][airway_type], label=city_name[city], \
-                         linestyle=':', marker='*', color=colors[index], alpha=0.8)
+                         linestyle='-', linewidth=3, marker='x', markersize=10, color=colors[index], alpha=0.8)
             except:
                 pass
 
@@ -221,7 +221,7 @@ def generate_municipality_line(start_time='2016/01', end_time='2022/06', airway_
             city = city.replace("台", "臺")
             try:
                 plt.plot(x, df_taiwan[df_taiwan.year_month_city.str.contains(city_name[city])][airway_type] / df_taiwan[df_taiwan.year_month_city.str.contains(city_name[city])]['airway_manage_count'], 
-                        label=city_name[city], linestyle=':', marker='*', color=colors[index], alpha=0.8)
+                        label=city_name[city], linestyle='-', linewidth=3, marker='x', markersize=10, color=colors[index], alpha=0.8)
             except:
                 pass
 
