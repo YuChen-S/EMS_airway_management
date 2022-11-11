@@ -72,10 +72,10 @@ with st.container():
         st.warning(f'The additional cities for line chart : **_{additional_city}_**')
     st.write('---')
     # fifth row
-    st.subheader('Please select the target city for stacked bar chart')
-    user_col_5_1, user_col_5_2 = st.columns(2)
-    with user_col_5_1:
-        if management_type == 'Airway':
+    if management_type == 'Airway':
+        st.subheader('Please select the target city for stacked bar chart')
+        user_col_5_1, user_col_5_2 = st.columns(2)
+        with user_col_5_1:
             primary_city = st.selectbox('The specific city for stacked bar chart: ', municipalities+city_name, index=0)
             st.warning(f'The city for bar chart : **_{primary_city}_**')
 ###### Model prediction ######
