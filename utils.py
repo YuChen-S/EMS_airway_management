@@ -134,7 +134,7 @@ def get_partial_df(start_time='2018/01', end_time='2022/06', category='Airway', 
 
     ### Data correction
     # data saved in wrong column (Nasal nanuula <-> Mask) at New Taipei 202009
-    if '新北市' in target_city and category == 'airway' and int(end_time.replace('/', '')) >= 202009:
+    if '新北市' in target_city and category == 'Airway' and int(end_time.replace('/', '')) >= 202009:
         new_taipei_202009_index = df_taiwan[df_taiwan['year_month_city']=='2020-9 New Taipei'].index[0]
         df_taiwan.loc[new_taipei_202009_index, 'Nasal_cannula'], df_taiwan.loc[new_taipei_202009_index, 'Mask'] = \
         df_taiwan.loc[new_taipei_202009_index, 'Mask'], df_taiwan.loc[new_taipei_202009_index, 'Nasal_cannula']
