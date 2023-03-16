@@ -10,6 +10,13 @@ st.sidebar.info(
     '''
 )
 
-paired_t_test = Image.open(os.path.dirname(__file__)+'/municipalities_figures/paired_t_test.png')
+
+
+descriptive_stat = Image.open(os.path.dirname(__file__)+'/statistic_figure/descriptive_stat.jpg')
+st.image(descriptive_stat, caption='')
+
+paired_t_test = Image.open(os.path.dirname(__file__)+'/statistic_figure/paried_t_test_top5.jpg')
 st.image(paired_t_test, caption='')
 
+# chi2_ = Image.open(os.path.dirname(__file__)+'/municipalities_figures/Chi square test for Mask from all city.jpg')
+# st.image(chi2_mask, caption='')
